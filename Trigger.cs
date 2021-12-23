@@ -11,7 +11,7 @@ namespace Azure_Functions_TEST
     public static class Trigger
     {
         [FunctionName("Blobtrigger")]
-        public static async Task Run([BlobTrigger("master/content/images/{name}", Connection = "AzureWebJobsStorage")] Stream myBlob, string name, ILogger log)
+        public static async Task Run([BlobTrigger("master/content/images/{name}", Connection = "connectionString")] Stream myBlob, string name, ILogger log)
         {
             log.LogInformation($"C# Blob trigger function Processed blob\n Name:{name} \n Size: {myBlob.Length} Bytes");
 
@@ -22,7 +22,7 @@ namespace Azure_Functions_TEST
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(Environment.GetEnvironmentVariable("connectionString"));
             var blobClient = storageAccount.CreateCloudBlobClient();
             var blobContainerInstance = blobClient.GetContainerReference("images");
-
+            await blobContainerInstance.CreateIfNotExistsAsync().ConfigureAwait(false);
             var blob = blobContainerInstance.GetBlockBlobReference(filePath);
 
             await blob.UploadFromStreamAsync(myBlob);
