@@ -12,6 +12,8 @@ using Microsoft.WindowsAzure.Storage.Blob;
 using Microsoft.WindowsAzure.Storage.Queue;
 using Microsoft.Azure.ServiceBus;
 using System.Text;
+using Azure.Messaging.ServiceBus;
+using Microsoft.Azure.ServiceBus.Management;
 
 namespace Azure_Functions_TEST
 {
@@ -36,7 +38,7 @@ namespace Azure_Functions_TEST
 
 
 
-            ResponseDTO response = new ResponseDTO()
+            ResponseDTO response = new ResponseDTO() 
             { 
                 URL = blob.Uri.AbsoluteUri
             };
@@ -77,14 +79,30 @@ namespace Azure_Functions_TEST
             string cloudQueueResponse = JsonConvert.SerializeObject(response);
 
 
+            //Storage Queue
             CloudQueueClient cloudQueueclient = storageAccount.CreateCloudQueueClient();
             CloudQueue queue = cloudQueueclient.GetQueueReference("upload");
+            await queue.CreateIfNotExistsAsync().ConfigureAwait(false);
             CloudQueueMessage queueMessage = new CloudQueueMessage(cloudQueueResponse);
             await queue.AddMessageAsync(queueMessage).ConfigureAwait(false);
 
-            var client = new QueueClient(Environment.GetEnvironmentVariable("AzureWebJobsServiceBus"), "images-service-bus");
-            var message = new Message(Encoding.UTF8.GetBytes(cloudQueueResponse));
-            await client.SendAsync(message);
+
+            //Service bus Queue
+            //var client = new QueueClient(Environment.GetEnvironmentVariable("AzureWebJobsServiceBus"), "images-service-bus");
+            //var message = new Message(Encoding.UTF8.GetBytes(cloudQueueResponse));
+            //await client.SendAsync(message);
+
+
+            //Service bus Topic 
+            //var client = new ServiceBusClient(Environment.GetEnvironmentVariable("AzureWebJobsServiceBus"));
+            //var sender = client.CreateSender("uploads");
+            //using ServiceBusMessageBatch messageBatch = await sender.CreateMessageBatchAsync();
+            //messageBatch.TryAddMessage(new ServiceBusMessage(cloudQueueResponse));
+            //await sender.SendMessagesAsync(messageBatch);
+
+            //Service bus Topic
+            var clients = new TopicClient(Environment.GetEnvironmentVariable("AzureWebJobsServiceBus"), "uploads");
+            await clients.SendAsync(new Message(Encoding.UTF8.GetBytes(cloudQueueResponse))).ConfigureAwait(false);
 
             return new OkObjectResult(response);
         }
@@ -103,6 +121,8 @@ namespace Azure_Functions_TEST
         {
             return "random service bus string";
         }
+
+ 
     }
 
     public class ResponseDTO

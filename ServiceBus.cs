@@ -9,10 +9,17 @@ namespace Azure_Functions_TEST
     public static class ServiceBus
     {
         [FunctionName("ServiceBus")]
-        public static void Run([ServiceBusTrigger("images-service-bus", Connection = "AzureWebJobsServiceBus")]string myQueueItem, ILogger log)
+        public static void Run([ServiceBusTrigger("images-service-bus", Connection = "AzureWebJobsServiceBus")] string myQueueItem, ILogger log)
         {
             dynamic data = JsonConvert.DeserializeObject(myQueueItem);
             log.LogWarning($"ServiceBus queue trigger Function processed image: {data.FileName}");
+        }
+
+        [FunctionName("ServiceBusSubs")]
+        public  static void RunServiceBusSubs([ServiceBusTrigger("uploads", "images", Connection = "AzureWebJobsServiceBus")] string myQueueItem, ILogger log)
+        {
+            dynamic data = JsonConvert.DeserializeObject(myQueueItem);
+            log.LogWarning($"ServiceBus queue Topic Function processed image: {data.FileName}");
         }
     }
 }
