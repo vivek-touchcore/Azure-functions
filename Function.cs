@@ -14,6 +14,7 @@ using Microsoft.Azure.ServiceBus;
 using System.Text;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Azure.ServiceBus.Management;
+using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 
 namespace Azure_Functions_TEST
 {
@@ -101,8 +102,8 @@ namespace Azure_Functions_TEST
             //await sender.SendMessagesAsync(messageBatch);
 
             //Service bus Topic
-            var clients = new TopicClient(Environment.GetEnvironmentVariable("AzureWebJobsServiceBus"), "uploads");
-            await clients.SendAsync(new Message(Encoding.UTF8.GetBytes(cloudQueueResponse))).ConfigureAwait(false);
+            //var clients = new TopicClient(Environment.GetEnvironmentVariable("AzureWebJobsServiceBus"), "uploads");
+            //await clients.SendAsync(new Message(Encoding.UTF8.GetBytes(cloudQueueResponse))).ConfigureAwait(false);
 
             return new OkObjectResult(response);
         }
@@ -122,7 +123,6 @@ namespace Azure_Functions_TEST
             return "random service bus string";
         }
 
- 
     }
 
     public class ResponseDTO
